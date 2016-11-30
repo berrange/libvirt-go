@@ -1100,33 +1100,33 @@ func (i *VirDomainInfo) GetCpuTime() uint64 {
 }
 
 type VirDomainCPUStats struct {
-	cpu_timeSet    bool
-	cpu_time       uint64
-	user_timeSet   bool
-	user_time      uint64
-	system_timeSet bool
-	system_time    uint64
-	vcpu_timeSet   bool
-	vcpu_time      uint64
+	CpuTimeSet    bool
+	CpuTime       uint64
+	UserTimeSet   bool
+	UserTime      uint64
+	SystemTimeSet bool
+	SystemTime    uint64
+	VcpuTimeSet   bool
+	VcpuTime      uint64
 }
 
 func getCPUStatsFieldInfo(params *VirDomainCPUStats) map[string]typedParamsFieldInfo {
 	return map[string]typedParamsFieldInfo{
 		C.VIR_DOMAIN_CPU_STATS_CPUTIME: typedParamsFieldInfo{
-			set: &params.cpu_timeSet,
-			ul:  &params.cpu_time,
+			set: &params.CpuTimeSet,
+			ul:  &params.CpuTime,
 		},
 		C.VIR_DOMAIN_CPU_STATS_USERTIME: typedParamsFieldInfo{
-			set: &params.user_timeSet,
-			ul:  &params.user_time,
+			set: &params.UserTimeSet,
+			ul:  &params.UserTime,
 		},
 		C.VIR_DOMAIN_CPU_STATS_SYSTEMTIME: typedParamsFieldInfo{
-			set: &params.system_timeSet,
-			ul:  &params.system_time,
+			set: &params.SystemTimeSet,
+			ul:  &params.SystemTime,
 		},
 		C.VIR_DOMAIN_CPU_STATS_VCPUTIME: typedParamsFieldInfo{
-			set: &params.vcpu_timeSet,
-			ul:  &params.vcpu_time,
+			set: &params.VcpuTimeSet,
+			ul:  &params.VcpuTime,
 		},
 	}
 }
@@ -1158,12 +1158,12 @@ func (d *VirDomain) GetCPUStats(startCpu int, nCpus uint, flags uint32) (*[]VirD
 		nallocparams = nparams * nCpus
 	}
 	cparams = make([]C.virTypedParameter, nallocparams)
-	ret = C.virDomainGetCPUStats(d.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams)), C.uint(nparams), C.int(startCpu), C.uint(nCpus), C.uint(flags))
+	ret = C.virDomainGetCPUStats(d.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), C.uint(nparams), C.int(startCpu), C.uint(nCpus), C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
 
-	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams)), C.int(nallocparams))
+	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), C.int(nallocparams))
 
 	stats := make([]VirDomainCPUStats, nCpus)
 	for i := 0; i < int(nCpus); i++ {
@@ -1242,12 +1242,12 @@ func (d *VirDomain) GetInterfaceParameters(device string, flags uint32) (*VirDom
 	}
 
 	cparams := make([]C.virTypedParameter, nparams)
-	ret = C.virDomainGetInterfaceParameters(d.ptr, cdevice, (*C.virTypedParameter)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
+	ret = C.virDomainGetInterfaceParameters(d.ptr, cdevice, (*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), &nparams, C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
 
-	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams)), nparams)
+	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), nparams)
 
 	err := typedParamsUnpack(cparams, info)
 	if err != nil {
@@ -1544,12 +1544,12 @@ func (d *VirDomain) BlockStatsFlags(disk string, flags uint32) (*VirDomainBlockS
 	}
 
 	cparams := make([]C.virTypedParameter, nparams)
-	ret = C.virDomainBlockStatsFlags(d.ptr, cdisk, (*C.virTypedParameter)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
+	ret = C.virDomainBlockStatsFlags(d.ptr, cdisk, (*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), &nparams, C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
 
-	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams)), nparams)
+	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), nparams)
 
 	err := typedParamsUnpack(cparams, info)
 	if err != nil {
