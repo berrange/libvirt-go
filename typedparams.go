@@ -4,6 +4,8 @@ package libvirt
 #cgo LDFLAGS: -lvirt
 #include <libvirt/libvirt.h>
 #include <libvirt/virterror.h>
+#include <stdlib.h>
+#include <string.h>
 */
 import "C"
 
@@ -21,6 +23,7 @@ type typedParamsFieldInfo struct {
 	b   *bool
 	d   *float64
 	s   *string
+	sl  *[]string
 }
 
 func typedParamsUnpack(cparams []C.virTypedParameter, infomap map[string]typedParamsFieldInfo) error {
@@ -68,11 +71,15 @@ func typedParamsUnpack(cparams []C.virTypedParameter, infomap map[string]typedPa
 			*info.b = *(*C.char)(unsafe.Pointer(&cparam.value)) == 1
 			*info.set = true
 		case C.VIR_TYPED_PARAM_STRING:
-			if info.s == nil {
-				return fmt.Errorf("field %s expects a string", name)
+			if info.s != nil {
+				*info.s = C.GoString(*(**C.char)(unsafe.Pointer(&cparam.value)))
+				*info.set = true
+			} else if info.sl != nil {
+				*info.sl = append(*info.sl, C.GoString(*(**C.char)(unsafe.Pointer(&cparam.value))))
+				*info.set = true
+			} else {
+				return fmt.Errorf("field %s expects a string/string list", name)
 			}
-			*info.s = C.GoString(*(**C.char)(unsafe.Pointer(&cparam.value)))
-			*info.set = true
 		}
 	}
 
@@ -80,6 +87,8 @@ func typedParamsUnpack(cparams []C.virTypedParameter, infomap map[string]typedPa
 }
 
 func typedParamsPack(cparams []C.virTypedParameter, infomap map[string]typedParamsFieldInfo) error {
+	stringOffsets := make(map[string]uint)
+
 	for _, cparam := range cparams {
 		name := C.GoString((*C.char)(unsafe.Pointer(&cparam.field)))
 		info, ok := infomap[name]
@@ -125,13 +134,57 @@ func typedParamsPack(cparams []C.virTypedParameter, infomap map[string]typedPara
 				*(*C.char)(unsafe.Pointer(&cparam.value)) = 0
 			}
 		case C.VIR_TYPED_PARAM_STRING:
-			if info.s == nil {
+			if info.s != nil {
+				*(**C.char)(unsafe.Pointer(&cparam.value)) = C.CString(*info.s)
+			} else if info.sl != nil {
+				count := stringOffsets[name]
+				*(**C.char)(unsafe.Pointer(&cparam.value)) = C.CString((*info.sl)[count])
+				stringOffsets[name] = count + 1
+			} else {
 				return fmt.Errorf("field %s expects a string", name)
 			}
-
-			*(**C.char)(unsafe.Pointer(&cparam.value)) = C.CString(*info.s)
 		}
 	}
 
 	return nil
+}
+
+func typedParamsPackNew(infomap map[string]typedParamsFieldInfo) (*[]C.virTypedParameter, error) {
+	nparams := 0
+	for _, value := range infomap {
+		if value.sl != nil {
+			nparams += len(*value.sl)
+		} else {
+			nparams++
+		}
+	}
+
+	cparams := make([]C.virTypedParameter, nparams)
+	nparams = 0
+	for key, value := range infomap {
+		cfield := C.CString(key)
+		defer C.free(cfield)
+		clen := len(key) + 1
+		if clen > C.VIR_TYPED_PARAM_FIELD_LENGTH {
+			clen = C.VIR_TYPED_PARAM_FIELD_LENGTH
+		}
+		if value.sl != nil {
+			for i := 0; i < len(*value.sl); i++ {
+				cparam := &cparams[nparams]
+				C.memcpy(unsafe.Pointer(&cparam.field[0]), unsafe.Pointer(cfield), C.size_t(clen))
+				nparams++
+			}
+		} else {
+			cparam := &cparams[nparams]
+			C.memcpy(unsafe.Pointer(&cparam.field[0]), unsafe.Pointer(cfield), C.size_t(clen))
+			nparams++
+		}
+	}
+
+	err := typedParamsPack(cparams, infomap)
+	if err != nil {
+		C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), C.int(nparams))
+		return nil, err
+	}
+	return &cparams, nil
 }
