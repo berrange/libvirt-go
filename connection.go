@@ -1565,12 +1565,12 @@ func (c *VirConnection) GetMemoryParameters(flags uint32) (*VirNodeMemoryParamet
 	}
 
 	cparams := make([]C.virTypedParameter, nparams)
-	ret = C.virNodeGetMemoryParameters(c.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
+	ret = C.virNodeGetMemoryParameters(c.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), &nparams, C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
 
-	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams)), nparams)
+	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), nparams)
 
 	err := typedParamsUnpack(cparams, info)
 	if err != nil {
@@ -1657,19 +1657,19 @@ func (c *VirConnection) SetMemoryParameters(params *VirNodeMemoryParameters, fla
 	}
 
 	cparams := make([]C.virTypedParameter, nparams)
-	ret = C.virNodeGetMemoryParameters(c.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams)), &nparams, 0)
+	ret = C.virNodeGetMemoryParameters(c.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), &nparams, 0)
 	if ret == -1 {
 		return GetLastError()
 	}
 
-	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams)), nparams)
+	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), nparams)
 
 	err := typedParamsPack(cparams, info)
 	if err != nil {
 		return err
 	}
 
-	ret = C.virNodeSetMemoryParameters(c.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams)), nparams, C.uint(flags))
+	ret = C.virNodeSetMemoryParameters(c.ptr, (*C.virTypedParameter)(unsafe.Pointer(&cparams[0])), nparams, C.uint(flags))
 
 	return nil
 }
