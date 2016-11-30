@@ -643,6 +643,20 @@ func (c *VirConnection) LookupDomainByUUIDString(uuid string) (VirDomain, error)
 	return VirDomain{ptr: ptr}, nil
 }
 
+func (c *VirConnection) LookupDomainByUUID(uuid []byte) (VirDomain, error) {
+	if len(uuid) != C.VIR_UUID_BUFLEN {
+		return VirDomain{}, fmt.Errorf("UUID must be exactly %d bytes in size",
+			int(C.VIR_UUID_BUFLEN))
+	}
+	cUuid := C.CBytes(uuid)
+	defer C.free(unsafe.Pointer(cUuid))
+	ptr := C.virDomainLookupByUUID(c.ptr, (*C.uchar)(cUuid))
+	if ptr == nil {
+		return VirDomain{}, GetLastError()
+	}
+	return VirDomain{ptr: ptr}, nil
+}
+
 func (c *VirConnection) DomainCreateXMLFromFile(xmlFile string, flags VirDomainCreateFlags) (VirDomain, error) {
 	xmlConfig, err := ioutil.ReadFile(xmlFile)
 	if err != nil {
