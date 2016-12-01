@@ -26,8 +26,10 @@ type typedParamsFieldInfo struct {
 	sl  *[]string
 }
 
-func typedParamsUnpack(cparams []C.virTypedParameter, infomap map[string]typedParamsFieldInfo) error {
-	for _, cparam := range cparams {
+func typedParamsUnpackLen(cparams *C.virTypedParameter, nparams int, infomap map[string]typedParamsFieldInfo) error {
+	for i := 0; i < nparams; i++ {
+		var cparam *C.virTypedParameter
+		cparam = (*C.virTypedParameter)(unsafe.Pointer(uintptr(unsafe.Pointer(cparams)) + unsafe.Sizeof(*cparam)*uintptr(i)))
 		name := C.GoString((*C.char)(unsafe.Pointer(&cparam.field)))
 		info, ok := infomap[name]
 		if !ok {
@@ -86,10 +88,16 @@ func typedParamsUnpack(cparams []C.virTypedParameter, infomap map[string]typedPa
 	return nil
 }
 
-func typedParamsPack(cparams []C.virTypedParameter, infomap map[string]typedParamsFieldInfo) error {
+func typedParamsUnpack(cparams []C.virTypedParameter, infomap map[string]typedParamsFieldInfo) error {
+	return typedParamsUnpackLen(&cparams[0], len(cparams), infomap)
+}
+
+func typedParamsPackLen(cparams *C.virTypedParameter, nparams int, infomap map[string]typedParamsFieldInfo) error {
 	stringOffsets := make(map[string]uint)
 
-	for _, cparam := range cparams {
+	for i := 0; i < nparams; i++ {
+		var cparam *C.virTypedParameter
+		cparam = (*C.virTypedParameter)(unsafe.Pointer(uintptr(unsafe.Pointer(cparams)) + unsafe.Sizeof(*cparam)*uintptr(i)))
 		name := C.GoString((*C.char)(unsafe.Pointer(&cparam.field)))
 		info, ok := infomap[name]
 		if !ok {
@@ -147,6 +155,10 @@ func typedParamsPack(cparams []C.virTypedParameter, infomap map[string]typedPara
 	}
 
 	return nil
+}
+
+func typedParamsPack(cparams []C.virTypedParameter, infomap map[string]typedParamsFieldInfo) error {
+	return typedParamsPackLen(&cparams[0], len(cparams), infomap)
 }
 
 func typedParamsPackNew(infomap map[string]typedParamsFieldInfo) (*[]C.virTypedParameter, error) {
