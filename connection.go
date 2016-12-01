@@ -1643,8 +1643,8 @@ func (c *VirConnection) GetMemoryStats(cellNum int, flags uint32) (*VirNodeMemor
 }
 
 type VirNodeSecurityModel struct {
-	model string
-	doi   string
+	Model string
+	Doi   string
 }
 
 func (c *VirConnection) GetSecurityModel() (*VirNodeSecurityModel, error) {
@@ -1655,8 +1655,8 @@ func (c *VirConnection) GetSecurityModel() (*VirNodeSecurityModel, error) {
 	}
 
 	return &VirNodeSecurityModel{
-		model: C.GoString((*C.char)(unsafe.Pointer(&cmodel.model))),
-		doi:   C.GoString((*C.char)(unsafe.Pointer(&cmodel.doi))),
+		Model: C.GoString((*C.char)(unsafe.Pointer(&cmodel.model))),
+		Doi:   C.GoString((*C.char)(unsafe.Pointer(&cmodel.doi))),
 	}, nil
 }
 
