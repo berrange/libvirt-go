@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func buildTestConnection() VirConnection {
+func buildTestConnection() *VirConnection {
 	conn, err := NewVirConnection("test:///default")
 	if err != nil {
 		panic(err)
@@ -391,7 +391,6 @@ func TestLookupInvalidDomainByName(t *testing.T) {
 
 func TestDomainCreateXML(t *testing.T) {
 	conn := buildTestConnection()
-	nodom := VirDomain{}
 	defer func() {
 		if res, _ := conn.CloseConnection(); res != 0 {
 			t.Errorf("CloseConnection() == %d, expected 0", res)
@@ -432,7 +431,7 @@ func TestDomainCreateXML(t *testing.T) {
 	}
 
 	testeddom, err := conn.LookupDomainByName(defName)
-	if testeddom != nodom {
+	if err == nil {
 		t.Fatal("Created domain is persisting")
 		return
 	}
