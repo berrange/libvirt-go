@@ -18,7 +18,7 @@ func buildTestQEMUConnection() VirConnection {
 	return conn
 }
 
-func buildTestQEMUDomain() (VirDomain, VirConnection) {
+func buildTestQEMUDomain() (Domain, VirConnection) {
 	conn := buildTestQEMUConnection()
 	dom, err := conn.DomainDefineXML(`<domain type="qemu">
 		<name>` + strings.Replace(time.Now().String(), " ", "_", -1) + `</name>
@@ -212,7 +212,7 @@ func TestDomainCreateWithFlags(t *testing.T) {
 	}
 }
 
-func defineTestLxcDomain(conn VirConnection, title string) (VirDomain, error) {
+func defineTestLxcDomain(conn VirConnection, title string) (Domain, error) {
 	if title == "" {
 		title = time.Now().String()
 	}
