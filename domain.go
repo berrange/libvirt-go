@@ -3341,6 +3341,8 @@ type VirDomainSchedulerParameters struct {
 	IothreadQuota     uint64
 	WeightSet         bool
 	Weight            uint
+	CapSet            bool
+	Cap               uint
 	ReservationSet    bool
 	Reservation       int64
 	LimitSet          bool
@@ -3390,6 +3392,10 @@ func getDomainSchedulerParametersFieldInfo(params *VirDomainSchedulerParameters)
 		C.VIR_DOMAIN_SCHEDULER_WEIGHT: typedParamsFieldInfo{
 			set: &params.WeightSet,
 			ui:  &params.Weight,
+		},
+		C.VIR_DOMAIN_SCHEDULER_CAP: typedParamsFieldInfo{
+			set: &params.CapSet,
+			ui:  &params.Cap,
 		},
 		C.VIR_DOMAIN_SCHEDULER_RESERVATION: typedParamsFieldInfo{
 			set: &params.ReservationSet,
