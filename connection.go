@@ -1695,3 +1695,33 @@ func (c *VirConnection) SuspendForDuration(target VirNodeSuspendTarget, duration
 	}
 	return nil
 }
+
+func (c *VirConnection) DomainSaveImageDefineXML(file string, xml string, flags VirDomainSaveRestoreFlags) error {
+	cfile := C.CString(file)
+	defer C.free(cfile)
+	cxml := C.CString(xml)
+	defer C.free(cxml)
+
+	ret := C.virDomainSaveImageDefineXML(c.ptr, cfile, cxml, C.uint(flags))
+
+	if ret == -1 {
+		return GetLastError()
+	}
+
+	return nil
+}
+
+func (c *VirConnection) DomainSaveImageGetXMLDesc(file string, flags VirDomainXMLFlags) (string, error) {
+	cfile := C.CString(file)
+	defer C.free(cfile)
+
+	ret := C.virDomainSaveImageGetXMLDesc(c.ptr, cfile, C.uint(flags))
+
+	if ret == nil {
+		return "", GetLastError()
+	}
+
+	defer C.free(ret)
+
+	return C.GoString(ret), nil
+}
