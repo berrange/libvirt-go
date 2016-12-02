@@ -45,7 +45,7 @@ func buildTransientTestDomain() (*Domain, *Connect) {
 		<os>
 			<type>hvm</type>
 		</os>
-	</domain>`, VIR_DOMAIN_NONE)
+	</domain>`, DOMAIN_NONE)
 	if err != nil {
 		panic(err)
 	}
@@ -278,7 +278,7 @@ func TestCreateDestroyDomain(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if DomainState(state[0]) != VIR_DOMAIN_RUNNING {
+	if DomainState(state[0]) != DOMAIN_RUNNING {
 		t.Fatal("Domain should be running")
 		return
 	}
@@ -291,7 +291,7 @@ func TestCreateDestroyDomain(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if DomainState(state[0]) != VIR_DOMAIN_SHUTOFF {
+	if DomainState(state[0]) != DOMAIN_SHUTOFF {
 		t.Fatal("Domain should be destroyed")
 		return
 	}
@@ -488,7 +488,7 @@ func TestDomainSetVcpus(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if err := dom.SetVcpusFlags(1, VIR_DOMAIN_VCPU_LIVE); err != nil {
+	if err := dom.SetVcpusFlags(1, DOMAIN_VCPU_LIVE); err != nil {
 		t.Error(err)
 		return
 	}
@@ -538,7 +538,7 @@ func TesDomainShutdownFlags(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if err := dom.ShutdownFlags(VIR_DOMAIN_SHUTDOWN_SIGNAL); err != nil {
+	if err := dom.ShutdownFlags(DOMAIN_SHUTDOWN_SIGNAL); err != nil {
 		t.Error(err)
 		return
 	}
@@ -564,7 +564,7 @@ func TesDomainDestoryFlags(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if err := dom.DestroyFlags(VIR_DOMAIN_DESTROY_GRACEFUL); err != nil {
+	if err := dom.DestroyFlags(DOMAIN_DESTROY_GRACEFUL); err != nil {
 		t.Error(err)
 		return
 	}
