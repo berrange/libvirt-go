@@ -1502,7 +1502,7 @@ func (d *Domain) DetachDeviceAlias(alias string, flags DomainDeviceModifyFlags) 
 
 	cAlias := C.CString(alias)
 	defer C.free(unsafe.Pointer(cAlias))
-	result := C.virDomainDetachDeviceAliasCompat(d.ptr, cAlias, C.uint(flags))
+	result := C.virDomainDetachDeviceAliasWrapper(d.ptr, cAlias, C.uint(flags))
 	if result == -1 {
 		return GetLastError()
 	}
@@ -1873,7 +1873,7 @@ func (d *Domain) ListAllInterfaceAddresses(src DomainInterfaceAddressesSource) (
 	}
 
 	var cList *C.virDomainInterfacePtr
-	numIfaces := int(C.virDomainInterfaceAddressesCompat(d.ptr, (**C.virDomainInterfacePtr)(&cList), C.uint(src), 0))
+	numIfaces := int(C.virDomainInterfaceAddressesWrapper(d.ptr, (**C.virDomainInterfacePtr)(&cList), C.uint(src), 0))
 	if numIfaces == -1 {
 		return nil, GetLastError()
 	}
@@ -1900,7 +1900,7 @@ func (d *Domain) ListAllInterfaceAddresses(src DomainInterfaceAddressesSource) (
 			ifaces[i].Addrs[k].Prefix = uint(caddr.prefix)
 
 		}
-		C.virDomainInterfaceFreeCompat(ciface)
+		C.virDomainInterfaceFreeWrapper(ciface)
 	}
 	C.free(unsafe.Pointer(cList))
 	return ifaces, nil
@@ -2044,7 +2044,7 @@ func (d *Domain) BlockCopy(disk string, destxml string, params *DomainBlockCopyP
 
 	defer C.virTypedParamsClear((*C.virTypedParameter)(unsafe.Pointer(&(*cparams)[0])), C.int(nparams))
 
-	ret := C.virDomainBlockCopyCompat(d.ptr, cdisk, cdestxml, (*C.virTypedParameter)(unsafe.Pointer(&(*cparams)[0])), C.int(nparams), C.uint(flags))
+	ret := C.virDomainBlockCopyWrapper(d.ptr, cdisk, cdestxml, (*C.virTypedParameter)(unsafe.Pointer(&(*cparams)[0])), C.int(nparams), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -2452,7 +2452,7 @@ func (d *Domain) MigrateGetMaxDowntime(flags uint32) (uint64, error) {
 		return 0, GetNotImplementedError("virDomainMigrateGetMaxDowntime")
 	}
 
-	ret := C.virDomainMigrateGetMaxDowntimeCompat(d.ptr, &downtimeLen, C.uint(flags))
+	ret := C.virDomainMigrateGetMaxDowntimeWrapper(d.ptr, &downtimeLen, C.uint(flags))
 	if ret == -1 {
 		return 0, GetLastError()
 	}
@@ -2466,7 +2466,7 @@ func (d *Domain) MigrateStartPostCopy(flags uint32) error {
 		return GetNotImplementedError("virDomainMigrateStartPostCopy")
 	}
 
-	ret := C.virDomainMigrateStartPostCopyCompat(d.ptr, C.uint(flags))
+	ret := C.virDomainMigrateStartPostCopyWrapper(d.ptr, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3456,7 +3456,7 @@ func (d *Domain) GetPerfEvents(flags DomainModificationImpact) (*DomainPerfEvent
 
 	var cparams *C.virTypedParameter
 	var nparams C.int
-	ret := C.virDomainGetPerfEventsCompat(d.ptr, (*C.virTypedParameterPtr)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
+	ret := C.virDomainGetPerfEventsWrapper(d.ptr, (*C.virTypedParameterPtr)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
@@ -3481,7 +3481,7 @@ func (d *Domain) SetPerfEvents(params *DomainPerfEvents, flags DomainModificatio
 
 	var cparams *C.virTypedParameter
 	var nparams C.int
-	ret := C.virDomainGetPerfEventsCompat(d.ptr, (*C.virTypedParameterPtr)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
+	ret := C.virDomainGetPerfEventsWrapper(d.ptr, (*C.virTypedParameterPtr)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3493,7 +3493,7 @@ func (d *Domain) SetPerfEvents(params *DomainPerfEvents, flags DomainModificatio
 		return err
 	}
 
-	ret = C.virDomainSetPerfEventsCompat(d.ptr, cparams, nparams, C.uint(flags))
+	ret = C.virDomainSetPerfEventsWrapper(d.ptr, cparams, nparams, C.uint(flags))
 
 	return nil
 }
@@ -3770,7 +3770,7 @@ func (d *Domain) GetTime(flags uint32) (int64, uint, error) {
 	}
 	var secs C.longlong
 	var nsecs C.uint
-	ret := C.virDomainGetTimeCompat(d.ptr, &secs, &nsecs, C.uint(flags))
+	ret := C.virDomainGetTimeWrapper(d.ptr, &secs, &nsecs, C.uint(flags))
 	if ret == -1 {
 		return 0, 0, GetLastError()
 	}
@@ -3784,7 +3784,7 @@ func (d *Domain) SetTime(secs int64, nsecs uint, flags DomainSetTimeFlags) error
 		return GetNotImplementedError("virDomainSetTime")
 	}
 
-	ret := C.virDomainSetTimeCompat(d.ptr, C.longlong(secs), C.uint(nsecs), C.uint(flags))
+	ret := C.virDomainSetTimeWrapper(d.ptr, C.longlong(secs), C.uint(nsecs), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3803,7 +3803,7 @@ func (d *Domain) SetUserPassword(user string, password string, flags DomainSetUs
 	defer C.free(unsafe.Pointer(cuser))
 	defer C.free(unsafe.Pointer(cpassword))
 
-	ret := C.virDomainSetUserPasswordCompat(d.ptr, cuser, cpassword, C.uint(flags))
+	ret := C.virDomainSetUserPasswordWrapper(d.ptr, cuser, cpassword, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3850,7 +3850,7 @@ func (d *Domain) Rename(name string, flags uint32) error {
 	}
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
-	ret := C.virDomainRenameCompat(d.ptr, cname, C.uint(flags))
+	ret := C.virDomainRenameWrapper(d.ptr, cname, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3909,7 +3909,7 @@ func (d *Domain) CoreDumpWithFormat(to string, format DomainCoreDumpFormat, flag
 	cto := C.CString(to)
 	defer C.free(unsafe.Pointer(cto))
 
-	ret := C.virDomainCoreDumpWithFormatCompat(d.ptr, cto, C.uint(format), C.uint(flags))
+	ret := C.virDomainCoreDumpWithFormatWrapper(d.ptr, cto, C.uint(format), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3942,7 +3942,7 @@ func (d *Domain) FSFreeze(mounts []string, flags uint32) error {
 	}
 
 	nmounts := len(mounts)
-	ret := C.virDomainFSFreezeCompat(d.ptr, (**C.char)(unsafe.Pointer(&cmounts[0])), C.uint(nmounts), C.uint(flags))
+	ret := C.virDomainFSFreezeWrapper(d.ptr, (**C.char)(unsafe.Pointer(&cmounts[0])), C.uint(nmounts), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -3963,7 +3963,7 @@ func (d *Domain) FSThaw(mounts []string, flags uint32) error {
 	}
 
 	nmounts := len(mounts)
-	ret := C.virDomainFSThawCompat(d.ptr, (**C.char)(unsafe.Pointer(&cmounts[0])), C.uint(nmounts), C.uint(flags))
+	ret := C.virDomainFSThawWrapper(d.ptr, (**C.char)(unsafe.Pointer(&cmounts[0])), C.uint(nmounts), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4001,7 +4001,7 @@ func (d *Domain) GetFSInfo(flags uint32) ([]DomainFSInfo, error) {
 	}
 	var cfsinfolist **C.virDomainFSInfo
 
-	ret := C.virDomainGetFSInfoCompat(d.ptr, (**C.virDomainFSInfoPtr)(unsafe.Pointer(&cfsinfolist)), C.uint(flags))
+	ret := C.virDomainGetFSInfoWrapper(d.ptr, (**C.virDomainFSInfoPtr)(unsafe.Pointer(&cfsinfolist)), C.uint(flags))
 	if ret == -1 {
 		return []DomainFSInfo{}, GetLastError()
 	}
@@ -4023,7 +4023,7 @@ func (d *Domain) GetFSInfo(flags uint32) ([]DomainFSInfo, error) {
 			DevAlias:   aliases,
 		}
 
-		C.virDomainFSInfoFreeCompat(cfsinfo)
+		C.virDomainFSInfoFreeWrapper(cfsinfo)
 	}
 	C.free(unsafe.Pointer(cfsinfolist))
 
@@ -4055,7 +4055,7 @@ func (d *Domain) AddIOThread(id uint, flags DomainModificationImpact) error {
 	if C.LIBVIR_VERSION_NUMBER < 1002015 {
 		return GetNotImplementedError("virDomainAddIOThread")
 	}
-	ret := C.virDomainAddIOThreadCompat(d.ptr, C.uint(id), C.uint(flags))
+	ret := C.virDomainAddIOThreadWrapper(d.ptr, C.uint(id), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4068,7 +4068,7 @@ func (d *Domain) DelIOThread(id uint, flags DomainModificationImpact) error {
 	if C.LIBVIR_VERSION_NUMBER < 1002015 {
 		return GetNotImplementedError("virDomainDelIOThread")
 	}
-	ret := C.virDomainDelIOThreadCompat(d.ptr, C.uint(id), C.uint(flags))
+	ret := C.virDomainDelIOThreadWrapper(d.ptr, C.uint(id), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4114,7 +4114,7 @@ func (d *Domain) GetIOThreadInfo(flags DomainModificationImpact) ([]DomainIOThre
 	}
 	var cinfolist **C.virDomainIOThreadInfo
 
-	ret := C.virDomainGetIOThreadInfoCompat(d.ptr, (**C.virDomainIOThreadInfoPtr)(unsafe.Pointer(&cinfolist)), C.uint(flags))
+	ret := C.virDomainGetIOThreadInfoWrapper(d.ptr, (**C.virDomainIOThreadInfoPtr)(unsafe.Pointer(&cinfolist)), C.uint(flags))
 	if ret == -1 {
 		return []DomainIOThreadInfo{}, GetLastError()
 	}
@@ -4139,7 +4139,7 @@ func (d *Domain) GetIOThreadInfo(flags DomainModificationImpact) ([]DomainIOThre
 			CpuMap:     cpumap,
 		}
 
-		C.virDomainIOThreadInfoFreeCompat(cinfo)
+		C.virDomainIOThreadInfoFreeWrapper(cinfo)
 	}
 	C.free(unsafe.Pointer(cinfolist))
 
@@ -4225,7 +4225,7 @@ func (d *Domain) PinIOThread(iothreadid uint, cpumap []bool, flags DomainModific
 		}
 	}
 
-	ret := C.virDomainPinIOThreadCompat(d.ptr, C.uint(iothreadid), &ccpumaps[0], C.int(maplen), C.uint(flags))
+	ret := C.virDomainPinIOThreadWrapper(d.ptr, C.uint(iothreadid), &ccpumaps[0], C.int(maplen), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4277,7 +4277,7 @@ func (d *Domain) OpenGraphicsFD(idx uint, flags DomainOpenGraphicsFlags) (*os.Fi
 	if C.LIBVIR_VERSION_NUMBER < 1002008 {
 		return nil, GetNotImplementedError("virDomainOpenGraphicsFD")
 	}
-	ret := C.virDomainOpenGraphicsFDCompat(d.ptr, C.uint(idx), C.uint(flags))
+	ret := C.virDomainOpenGraphicsFDWrapper(d.ptr, C.uint(idx), C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
@@ -4412,7 +4412,7 @@ func (d *Domain) GetGuestVcpus(flags uint32) (*DomainGuestVcpus, error) {
 
 	var cparams C.virTypedParameterPtr
 	var nparams C.uint
-	ret := C.virDomainGetGuestVcpusCompat(d.ptr, &cparams, &nparams, C.uint(flags))
+	ret := C.virDomainGetGuestVcpusWrapper(d.ptr, &cparams, &nparams, C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
@@ -4452,7 +4452,7 @@ func (d *Domain) SetGuestVcpus(cpus []bool, state bool, flags uint32) error {
 	}
 	ccpumap := C.CString(cpumap)
 	defer C.free(unsafe.Pointer(ccpumap))
-	ret := C.virDomainSetGuestVcpusCompat(d.ptr, ccpumap, cstate, C.uint(flags))
+	ret := C.virDomainSetGuestVcpusWrapper(d.ptr, ccpumap, cstate, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4485,7 +4485,7 @@ func (d *Domain) SetVcpu(cpus []bool, state bool, flags uint32) error {
 	}
 	ccpumap := C.CString(cpumap)
 	defer C.free(unsafe.Pointer(ccpumap))
-	ret := C.virDomainSetVcpuCompat(d.ptr, ccpumap, cstate, C.uint(flags))
+	ret := C.virDomainSetVcpuWrapper(d.ptr, ccpumap, cstate, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4501,7 +4501,7 @@ func (d *Domain) SetBlockThreshold(dev string, threshold uint64, flags uint32) e
 
 	cdev := C.CString(dev)
 	defer C.free(unsafe.Pointer(cdev))
-	ret := C.virDomainSetBlockThresholdCompat(d.ptr, cdev, C.ulonglong(threshold), C.uint(flags))
+	ret := C.virDomainSetBlockThresholdWrapper(d.ptr, cdev, C.ulonglong(threshold), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4517,7 +4517,7 @@ func (d *Domain) ManagedSaveDefineXML(xml string, flags uint32) error {
 
 	cxml := C.CString(xml)
 	defer C.free(unsafe.Pointer(cxml))
-	ret := C.virDomainManagedSaveDefineXMLCompat(d.ptr, cxml, C.uint(flags))
+	ret := C.virDomainManagedSaveDefineXMLWrapper(d.ptr, cxml, C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4531,7 +4531,7 @@ func (d *Domain) ManagedSaveGetXMLDesc(flags uint32) (string, error) {
 		return "", GetNotImplementedError("virDomainManagedSaveGetXMLDesc")
 	}
 
-	ret := C.virDomainManagedSaveGetXMLDescCompat(d.ptr, C.uint(flags))
+	ret := C.virDomainManagedSaveGetXMLDescWrapper(d.ptr, C.uint(flags))
 	if ret == nil {
 		return "", GetLastError()
 	}
@@ -4566,7 +4566,7 @@ func (d *Domain) SetLifecycleAction(lifecycleType uint32, action uint32, flags u
 		return GetNotImplementedError("virDomainSetLifecycleAction")
 	}
 
-	ret := C.virDomainSetLifecycleActionCompat(d.ptr, C.uint(lifecycleType), C.uint(action), C.uint(flags))
+	ret := C.virDomainSetLifecycleActionWrapper(d.ptr, C.uint(lifecycleType), C.uint(action), C.uint(flags))
 	if ret == -1 {
 		return GetLastError()
 	}
@@ -4600,7 +4600,7 @@ func (d *Domain) GetLaunchSecurityInfo(flags uint32) (*DomainLaunchSecurityParam
 	var cparams *C.virTypedParameter
 	var nparams C.int
 
-	ret := C.virDomainGetLaunchSecurityInfoCompat(d.ptr, (*C.virTypedParameterPtr)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
+	ret := C.virDomainGetLaunchSecurityInfoWrapper(d.ptr, (*C.virTypedParameterPtr)(unsafe.Pointer(&cparams)), &nparams, C.uint(flags))
 	if ret == -1 {
 		return nil, GetLastError()
 	}
